@@ -1,17 +1,17 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package bigramsorter;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.*;
 
 /**
  *
  * @author mnhammond0
+ * @version 02-SEP-2020
+ * Frostburg State University
+ * COSC620-701, Fall Online, Dr. Edwin Huang 
  */
 public class BigramSorter {
     
@@ -23,58 +23,79 @@ public class BigramSorter {
      */
     public static void main(String[] args) throws FileNotFoundException {
         
-        HashMap<String, Integer> bigramsSorted = new HashMap<>();
-        Scanner input = new Scanner(new File("./../test_input.txt"));
+        Scanner input = new Scanner(new File("./../Security_in_Computing input.txt"));
         List<String> list = new ArrayList<>();
         ArrayList<String> bigrams = new ArrayList<>();
+        HashMap<String, Integer> bigramsMap = new HashMap<>();
         
+        // Parse the input into an ArrayList of Strings
         while (input.hasNext()){
-            inputText = input.next().split("\\s+");
-            //for (String word : inputText){    //used for testing
-                //System.out.println(word);     //used for testing
-            //}
+            list.addAll(Arrays.asList(input.next().split("\\s+")));
         }
         
-        
+        // Compose bigrams using Strings in adjacent indeces
         for (int i = 0; i < list.size()-1; i++){
             String bigram;
-            if (i != 0){
-                bigram = (list.get(i-1))+" "+list.get(i);
-                bigrams.add(bigram);
+            bigram = list.get(i)+" "+list.get(i+1);
+            bigrams.add(bigram);
+        }
+        
+        // Add a count for each occurrence of a bigram
+        for (int i = 0; i < bigrams.size(); i++) {
+            int frequency;
+            String bigramKey;
+            if (bigramsMap.containsKey(bigrams.get(i))){  //in case of existing bigram, increment count
+                bigramKey = bigrams.get(i);
+                frequency = bigramsMap.get(bigramKey)+1;
+                bigramsMap.put(bigramKey, frequency);
             }
-            else {
-                bigram = list.get(i)+" "+list.get(i+1);
-                bigrams.add(bigram);
+            else {  //in case of new bigram not in our list
+                bigramKey = bigrams.get(i);
+                frequency = 1;
+                bigramsMap.put(bigramKey, frequency);
             }
         }
         
-        //System.out.print(bigrams.size());
-        
-        //for (int i = 0; i < bigrams.size(); i++){
-        //    System.out.println(i);
-        //}
-        
-        bigrams.forEach((combo) -> {        //used for testing
-          System.out.println(combo);     //used for testing
+        // Moving bigram <key, value> sets into a LinkedList in order to use Collections.sort
+        List<Map.Entry<String, Integer> > helperList = new LinkedList<Map.Entry<String, Integer> >(bigramsMap.entrySet());
+        Collections.sort(helperList, new Comparator<Map.Entry<String, Integer> >(){
+            public int compare(Map.Entry<String, Integer> b1,  
+                               Map.Entry<String, Integer> b2) 
+            { 
+                return (b2.getValue()).compareTo(b1.getValue()); 
+            }
         });
         
-    }
-}
-    /**
-    private static String getBigrams(String[] words){
-        String bigram = "";
-                
-        for (int i = 0; i < words.length-1; i++){
-            if (i == 0){
-                bigram = words[i]+" "+words[i+1];
+        // Putting sorted list back into a HashMap, and limiting our results to 20 most frequent
+        HashMap<String, Integer> bigramsSorted = new LinkedHashMap<String, Integer>();
+            for (Map.Entry<String, Integer> combo : helperList){
+                if (bigramsSorted.size()<20){
+                    bigramsSorted.put(combo.getKey(), combo.getValue());
+                }
             }
-            else {
-                bigram = (words[i-1])+" "+words[i];
-            }
+       
+        // Output to new file
+        PrintWriter outputWriter = new PrintWriter(new File("./../COSC620_Bigrams_Output_mnhammond0.txt"));
+        outputWriter.write("LAB 1 — MARISA HAMMOND\n\n");
+        outputWriter.write("••• 20 Most Frequent Bigrams •••\n");
+        
+        bigramsSorted.keySet().forEach((bigram) -> {
+            String key = bigram;
+            String value = bigramsSorted.get(bigram).toString();
+            outputWriter.write(key + ": " + value+"\n");
+            });
+        
+        outputWriter.close();
         }
-        return bigram;
-        }
-    }
-    */
     
+        /**
+         * Used to print program results when testing
+        bigramsSorted.keySet().forEach((bigram) -> {
+            String key = bigram;
+            String value = bigramsSorted.get(bigram).toString();
+            System.out.println(key + ": " + value);        
+            });
+        */
+    }
+
 
